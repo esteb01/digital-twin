@@ -1,0 +1,26 @@
+{
+    "full_name": "Esteban Ruíz Hernández",
+    "name": "Esteban",
+    "current_role": "AI Engineer | MLOps Specialist",
+    "location": "Bilbao, Spain",
+    "email": "estebanruiz435@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/esteban-ruiz-689258221/",
+    "specialties": [
+      "MLOps & AI Platform Engineering",
+      "Generative AI & Agentic Systems",
+      "Cloud-Native Machine Learning (AWS, Azure, GCP)"
+    ],
+    "years_experience": 2,
+    "education": [
+      {
+        "degree": "Master in Applied Artificial Intelligence",
+        "institution": "Mondragon Unibertsitatea",
+        "year": "2026 (Expected)"
+      },
+      {
+        "degree": "B.S. in Mechatronics, Robotics, and Automation",
+        "institution": "Universidad de las Américas Puebla (UDLAP)",
+        "year": "2022"
+      }
+    ]
+  }

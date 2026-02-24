@@ -1,0 +1,4 @@
+I am an Mechatronics Engineer with a Master Degree in Applied Artificial Intelligence with over 2 years of experience in cloud-native predictive modeling and web analytics.
+My expertise includes time-series forecasting (LSTM), classification (Random Forest), and the complete MLOps lifecycle, from experiment tracking (MLflow) to automated hyperparameter tuning (Optuna) and interpretability (SHAP).
+Currently, I'm focused on bridging the gap between data science and production, applying my skills in Generative AI and platform engineering to deliver scalable, end-to-end solutions.
+My background includes architecting a machine learning pipeline to successfully identify over 59,000 malicious bot sessions and engineering a forecasting model that improved prediction accuracy for key business metrics.
