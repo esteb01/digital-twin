@@ -29,7 +29,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Esteban Ruiz — career digital twin",
+        alt: "Probe companion robot — career digital twin",
       },
     ],
   },
@@ -59,6 +59,7 @@ export default function RootLayout({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Esteban Ruiz" />
         <meta name="twitter:image" content="https://erhdigitaltwin.com/og.png" />
+        <meta property="og:image:alt" content="Probe companion robot — career digital twin" />
       </head>
       <body className={`${display.variable} ${sans.variable} antialiased`}>
         {children}

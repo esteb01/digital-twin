@@ -1,15 +1,16 @@
 type CompanionBotProps = {
   attentive?: boolean;
+  variant?: 'patrol' | 'static';
 };
 
-export default function CompanionBot({ attentive = false }: CompanionBotProps) {
+export default function CompanionBot({ attentive = false, variant = 'patrol' }: CompanionBotProps) {
   return (
     <div
-      className={`companion-bot ${attentive ? "companion-bot-attentive" : ""}`}
+      className={`companion-bot ${attentive ? "companion-bot-attentive" : ""} ${variant === 'static' ? 'companion-bot-static' : ''}`}
       aria-hidden="true"
       title="Probe"
     >
-      <svg viewBox="0 0 80 88" width="64" height="70" fill="none">
+      <svg viewBox="0 0 80 88" width={variant === 'static' ? 40 : 64} height={variant === 'static' ? 44 : 70} fill="none">
         <ellipse cx="40" cy="84" rx="16" ry="3" fill="#67e8f9" opacity="0.12" />
         <path d="M28 70 L40 80 L52 70 L48 58 L32 58 Z" fill="#1c2430" stroke="#67e8f9" strokeWidth="1" />
         <rect x="24" y="40" width="32" height="20" rx="3" fill="#151b24" stroke="#4b5d73" strokeWidth="1.2" />

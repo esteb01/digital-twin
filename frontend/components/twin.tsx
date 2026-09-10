@@ -21,6 +21,9 @@ interface Message {
 
 type TwinProps = {
     onBusy?: (busy: boolean) => void;
+    compact?: boolean;
+    pendingPrompt?: string;
+    onPromptConsumed?: () => void;
 };
 
 const CHIPS = [
@@ -29,7 +32,7 @@ const CHIPS = [
     { label: 'This project', prompt: 'How is this digital twin built and deployed?' },
 ] as const;
 
-export default function Twin({ onBusy }: TwinProps) {
+export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptConsumed }: TwinProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -110,6 +113,15 @@ export default function Twin({ onBusy }: TwinProps) {
         }
     };
 
+    useEffect(() => {
+        const prompt = pendingPrompt?.trim();
+        if (!prompt || isLoading) return;
+        onPromptConsumed?.();
+        void sendMessage(prompt);
+        // One-shot seed from a node panel; sendMessage is recreated each render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pendingPrompt]);
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -118,14 +130,18 @@ export default function Twin({ onBusy }: TwinProps) {
     };
 
     return (
-        <div className="flex min-h-[calc(100vh-1.5rem)] flex-1 flex-col md:min-h-[calc(100vh-2rem)]">
-            <header className="mb-3 shrink-0 text-center">
-                <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-[0.08em] text-[#e8eef4] md:text-5xl">
-                    Esteban Ruiz
-                </h1>
-                <p className="mt-2 text-base text-[#e8eef4] md:text-lg">Ask anything about me!</p>
+        <div className={`flex flex-1 flex-col ${compact ? 'min-h-0 h-full' : 'min-h-[calc(100vh-1.5rem)] md:min-h-[calc(100vh-2rem)]'}`}>
+            <header className={`shrink-0 text-center ${compact ? 'mb-2' : 'mb-3'}`}>
+                {!compact && (
+                    <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-[0.08em] text-[#e8eef4] md:text-5xl">
+                        Esteban Ruiz
+                    </h1>
+                )}
+                <p className={`text-[#e8eef4] ${compact ? 'text-sm' : 'mt-2 text-base md:text-lg'}`}>
+                    Ask anything about me!
+                </p>
                 {messages.length === 0 && (
-                    <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    <div className={`flex flex-wrap justify-center gap-2 ${compact ? 'mt-2' : 'mt-3'}`}>
                         {CHIPS.map((chip) => (
                             <button
                                 key={chip.label}
@@ -141,7 +157,7 @@ export default function Twin({ onBusy }: TwinProps) {
                 )}
             </header>
 
-            <div className="flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-sm border border-[#2d3a4a] bg-[#10151c]/90 shadow-[0_0_80px_rgba(103,232,249,0.06)]">
+            <div className={`flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-[#2d3a4a] bg-[#10151c]/90 shadow-[0_0_80px_rgba(103,232,249,0.06)] ${compact ? '' : 'min-h-[28rem]'}`}>
                 <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
                     {messages.map((message) => (
                         <div
