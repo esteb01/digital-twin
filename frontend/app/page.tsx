@@ -1,25 +1,17 @@
+'use client';
+
+import { useState } from 'react';
+import CompanionBot from '@/components/companion-bot';
 import Twin from '@/components/twin';
 
 export default function Home() {
+  const [busy, setBusy] = useState(false);
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-center text-gray-800 mb-2">
-            AI in Production
-          </h1>
-          <p className="text-center text-gray-600 mb-8">
-            Deploy your Digital Twin to the cloud
-          </p>
-
-          <div className="h-[600px]">
-            <Twin />
-          </div>
-
-          <footer className="mt-8 text-center text-sm text-gray-500">
-            <p>Hope You enjoy your chat with me!</p>
-          </footer>
-        </div>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_20%_0%,_#163044_0%,_#07090d_42%,_#05070a_100%)] font-[family-name:var(--font-sans)] text-[#c5d0dc]">
+      <CompanionBot attentive={busy} />
+      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-3 py-3 md:px-5 md:py-4">
+        <Twin onBusy={setBusy} />
       </div>
     </main>
   );

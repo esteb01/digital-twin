@@ -129,14 +129,31 @@ resource "aws_lambda_function" "api" {
   runtime          = "python3.12"
   architectures    = ["x86_64"]
   timeout          = var.lambda_timeout
+  publish          = local.cost.lambda_provisioned_concurrency > 0
   tags             = local.common_tags
 
   environment {
     variables = {
-      CORS_ORIGINS     = var.use_custom_domain ? "https://${var.root_domain},https://www.${var.root_domain}" : "https://${aws_cloudfront_distribution.main.domain_name}"
-      S3_BUCKET        = aws_s3_bucket.memory.id
-      USE_S3           = "true"
-      BEDROCK_MODEL_ID = var.bedrock_model_id
+      CORS_ORIGINS = join(",", distinct(compact(concat(
+        ["https://${aws_cloudfront_distribution.main.domain_name}"],
+        var.use_custom_domain && var.root_domain != "" ? [
+          "https://${var.root_domain}",
+          "https://www.${var.root_domain}"
+        ] : []
+      ))))
+      S3_BUCKET            = aws_s3_bucket.memory.id
+      USE_S3               = "true"
+      BEDROCK_MODEL_ID     = local.cost.bedrock_model_id
+      ROUTER_MODEL_ID      = local.cost.bedrock_model_id
+      COST_TIER            = var.cost_tier
+      S3_VECTOR_BUCKET     = aws_s3vectors_vector_bucket.rag.vector_bucket_name
+      S3_VECTOR_INDEX      = aws_s3vectors_index.rag.index_name
+      EMBEDDING_MODEL_ID   = var.embedding_model_id
+      EMBEDDING_DIMENSIONS = tostring(var.embedding_dimensions)
+      DISCORD_WEBHOOK_URL  = var.discord_webhook_url
+      GITHUB_OWNER         = var.github_owner
+      GITHUB_REPOS         = "digital-twin,TFM_Surrogate_Robot"
+      RAG_ENABLED          = "true"
     }
   }
 
@@ -174,7 +191,7 @@ resource "aws_apigatewayv2_stage" "default" {
 resource "aws_apigatewayv2_integration" "lambda" {
   api_id           = aws_apigatewayv2_api.main.id
   integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.api.invoke_arn
+  integration_uri  = local.cost.lambda_provisioned_concurrency > 0 ? aws_lambda_alias.live[0].invoke_arn : aws_lambda_function.api.invoke_arn
 }
 
 # API Gateway Routes
@@ -208,9 +225,9 @@ resource "aws_lambda_permission" "api_gw" {
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "main" {
   aliases = local.aliases
-  
+
   viewer_certificate {
-    acm_certificate_arn            = var.use_custom_domain ? aws_acm_certificate.site[0].arn : null
+    acm_certificate_arn            = var.use_custom_domain ? aws_acm_certificate_validation.site[0].certificate_arn : null
     cloudfront_default_certificate = var.use_custom_domain ? false : true
     ssl_support_method             = var.use_custom_domain ? "sni-only" : null
     minimum_protocol_version       = "TLSv1.2_2021"

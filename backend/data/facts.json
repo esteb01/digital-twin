@@ -1,26 +1,29 @@
 {
-    "full_name": "Esteban Ruíz Hernández",
-    "name": "Esteban",
-    "current_role": "AI Engineer | MLOps Specialist",
-    "location": "Bilbao, Spain",
-    "email": "estebanruiz435@gmail.com",
-    "linkedin": "https://www.linkedin.com/in/esteban-ruiz-689258221/",
-    "specialties": [
-      "MLOps & AI Platform Engineering",
-      "Generative AI & Agentic Systems",
-      "Cloud-Native Machine Learning (AWS, Azure, GCP)"
-    ],
-    "years_experience": 2,
-    "education": [
-      {
-        "degree": "Master in Applied Artificial Intelligence",
-        "institution": "Mondragon Unibertsitatea",
-        "year": "2026 (Expected)"
-      },
-      {
-        "degree": "B.S. in Mechatronics, Robotics, and Automation",
-        "institution": "Universidad de las Américas Puebla (UDLAP)",
-        "year": "2022"
-      }
-    ]
-  }
+  "full_name": "Esteban Ruiz Hernández",
+  "name": "Esteban",
+  "current_role": "AI/ML Engineer | MLOps & Cloud",
+  "location": "Bilbao, Spain",
+  "email": "estebanruiz435@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/estebanruizh/",
+  "github": "https://github.com/esteb01",
+  "specialties": [
+    "Machine Learning and Deep Learning",
+    "MLOps and serverless AWS (Terraform, Lambda, Bedrock)",
+    "Surrogate models and latent representations for robotics"
+  ],
+  "years_experience": 2,
+  "education": [
+    {
+      "degree": "MSc in Applied Artificial Intelligence",
+      "institution": "Mondragon Unibertsitatea",
+      "year": "2024-2026",
+      "thesis": "Real-Time Robotic Trajectory Evaluation via Surrogate Models and Deep Latent Representations",
+      "thesis_grade": "9.1/10"
+    },
+    {
+      "degree": "BEng in Mechatronics, Robotics and Automation Engineering",
+      "institution": "Universidad de las Américas Puebla (UDLAP)",
+      "year": "2017-2022"
+    }
+  ]
+}

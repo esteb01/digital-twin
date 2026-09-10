@@ -30,6 +30,10 @@ if (-not (terraform workspace list | Select-String $Environment)) {
     terraform workspace select $Environment
 }
 
+if (-not $env:TF_VAR_discord_webhook_url -and $env:DISCORD_WEBHOOK_URL) {
+    $env:TF_VAR_discord_webhook_url = $env:DISCORD_WEBHOOK_URL
+}
+
 if ($Environment -eq "prod") {
     terraform apply -var-file="prod.tfvars" -var="project_name=$ProjectName" -var="environment=$Environment" -auto-approve
 } else {

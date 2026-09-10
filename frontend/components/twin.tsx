@@ -1,16 +1,35 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User } from 'lucide-react';
+import { Send } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+interface Source {
+    title: string;
+    source: string;
+    source_type: string;
+}
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: Date;
+    sources?: Source[];
 }
 
-export default function Twin() {
+type TwinProps = {
+    onBusy?: (busy: boolean) => void;
+};
+
+const CHIPS = [
+    { label: 'Thesis', prompt: "What is your master's thesis about?" },
+    { label: 'Work', prompt: 'Where have you worked?' },
+    { label: 'This project', prompt: 'How is this digital twin built and deployed?' },
+] as const;
+
+export default function Twin({ onBusy }: TwinProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -26,13 +45,18 @@ export default function Twin() {
         scrollToBottom();
     }, [messages]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+    useEffect(() => {
+        onBusy?.(isLoading);
+    }, [isLoading, onBusy]);
+
+    const sendMessage = async (raw?: string) => {
+        const content = (raw ?? input).trim();
+        if (!content || isLoading) return;
 
         const userMessage: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: input,
+            content,
             timestamp: new Date(),
         };
 
@@ -65,6 +89,7 @@ export default function Twin() {
                 role: 'assistant',
                 content: data.response,
                 timestamp: new Date(),
+                sources: data.sources || [],
             };
 
             setMessages(prev => [...prev, assistantMessage]);
@@ -79,7 +104,6 @@ export default function Twin() {
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
-            // Refocus the input after message is sent
             setTimeout(() => {
                 inputRef.current?.focus();
             }, 100);
@@ -93,143 +117,120 @@ export default function Twin() {
         }
     };
 
-    // Check if avatar exists
-    const [hasAvatar, setHasAvatar] = useState(false);
-    useEffect(() => {
-        // Check if avatar.jpeg exists
-        fetch('/avatar.jpeg', { method: 'HEAD' })
-            .then(res => setHasAvatar(res.ok))
-            .catch(() => setHasAvatar(false));
-    }, []);
-
     return (
-        <div className="flex flex-col h-full bg-gray-50 rounded-lg shadow-lg">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                    <Bot className="w-6 h-6" />
-                    AI Digital Twin
-                </h2>
-                <p className="text-sm text-slate-300 mt-1">Your AI course companion</p>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex min-h-[calc(100vh-1.5rem)] flex-1 flex-col md:min-h-[calc(100vh-2rem)]">
+            <header className="mb-3 shrink-0 text-center">
+                <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-[0.08em] text-[#e8eef4] md:text-5xl">
+                    Esteban Ruiz
+                </h1>
+                <p className="mt-2 text-base text-[#e8eef4] md:text-lg">Ask anything about me!</p>
                 {messages.length === 0 && (
-                    <div className="text-center text-gray-500 mt-8">
-                        {hasAvatar ? (
-                            <img 
-                                src="/avatar.jpeg" 
-                                alt="Digital Twin Avatar" 
-                                className="w-20 h-20 rounded-full mx-auto mb-3 border-2 border-gray-300"
-                            />
-                        ) : (
-                            <Bot className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                        )}
-                        <p>Hello! I&apos;m your Digital Twin.</p>
-                        <p className="text-sm mt-2">Ask me anything about AI deployment!</p>
+                    <div className="mt-3 flex flex-wrap justify-center gap-2">
+                        {CHIPS.map((chip) => (
+                            <button
+                                key={chip.label}
+                                type="button"
+                                onClick={() => sendMessage(chip.prompt)}
+                                disabled={isLoading}
+                                className="rounded-sm border border-[#2d3a4a] bg-[#151b24] px-3 py-1.5 text-sm text-[#c5d0dc] transition-colors hover:border-[#67e8f9]/50 hover:text-[#e8eef4] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {chip.label}
+                            </button>
+                        ))}
                     </div>
                 )}
+            </header>
 
-                {messages.map((message) => (
-                    <div
-                        key={message.id}
-                        className={`flex gap-3 ${
-                            message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
-                    >
-                        {message.role === 'assistant' && (
-                            <div className="flex-shrink-0">
-                                {hasAvatar ? (
-                                    <img 
-                                        src="/avatar.jpeg" 
-                                        alt="Digital Twin Avatar" 
-                                        className="w-8 h-8 rounded-full border border-slate-300"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                                        <Bot className="w-5 h-5 text-white" />
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
+            <div className="flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-sm border border-[#2d3a4a] bg-[#10151c]/90 shadow-[0_0_80px_rgba(103,232,249,0.06)]">
+                <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
+                    {messages.map((message) => (
                         <div
-                            className={`max-w-[70%] rounded-lg p-3 ${
-                                message.role === 'user'
-                                    ? 'bg-slate-700 text-white'
-                                    : 'bg-white border border-gray-200 text-gray-800'
-                            }`}
+                            key={message.id}
+                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
-                            <p className="whitespace-pre-wrap">{message.content}</p>
-                            <p
-                                className={`text-xs mt-1 ${
-                                    message.role === 'user' ? 'text-slate-300' : 'text-gray-500'
+                            <div
+                                className={`max-w-[78%] rounded-sm px-4 py-3 ${
+                                    message.role === 'user'
+                                        ? 'border border-[#67e8f9]/30 bg-[#163044] text-[#e8eef4]'
+                                        : 'border border-[#2d3a4a] bg-[#151b24] text-[#c5d0dc]'
                                 }`}
                             >
-                                {message.timestamp.toLocaleTimeString()}
-                            </p>
-                        </div>
-
-                        {message.role === 'user' && (
-                            <div className="flex-shrink-0">
-                                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                                    <User className="w-5 h-5 text-white" />
-                                </div>
+                                {message.role === 'assistant' ? (
+                                    <div className="twin-md">
+                                        <ReactMarkdown
+                                            skipHtml
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                a: ({ href, children }) => (
+                                                    <a href={href} target="_blank" rel="noreferrer">
+                                                        {children}
+                                                    </a>
+                                                ),
+                                            }}
+                                        >
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    <p className="whitespace-pre-wrap">{message.content}</p>
+                                )}
+                                {message.role === 'assistant' && message.sources && message.sources.length > 0 && (
+                                    <details className="mt-2 border-t border-[#2d3a4a] pt-2">
+                                        <summary className="cursor-pointer text-[11px] uppercase tracking-wide text-[#67e8f9]/80">
+                                            Sources
+                                        </summary>
+                                        <ul className="mt-1 space-y-1">
+                                            {message.sources.map((source) => (
+                                                <li key={`${source.source}-${source.title}`} className="text-xs text-[#93a4b8]">
+                                                    {source.title} · {source.source}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </details>
+                                )}
+                                <p
+                                    className={`mt-1 text-xs ${
+                                        message.role === 'user' ? 'text-[#67e8f9]/70' : 'text-[#6b7c90]'
+                                    }`}
+                                >
+                                    {message.timestamp.toLocaleTimeString()}
+                                </p>
                             </div>
-                        )}
-                    </div>
-                ))}
-
-                {isLoading && (
-                    <div className="flex gap-3 justify-start">
-                        <div className="flex-shrink-0">
-                            {hasAvatar ? (
-                                <img 
-                                    src="/avatar.jpeg" 
-                                    alt="Digital Twin Avatar" 
-                                    className="w-8 h-8 rounded-full border border-slate-300"
-                                />
-                            ) : (
-                                <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                                    <Bot className="w-5 h-5 text-white" />
-                                </div>
-                            )}
                         </div>
-                        <div className="bg-white border border-gray-200 rounded-lg p-3">
-                            <div className="flex space-x-2">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                    ))}
+
+                    {isLoading && (
+                        <div className="flex justify-start">
+                            <div className="border border-[#2d3a4a] bg-[#151b24] px-4 py-3 text-sm text-[#67e8f9]/80">
+                                …
                             </div>
                         </div>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <div className="border-t border-[#2d3a4a] bg-[#0c1118] p-4">
+                    <div className="flex gap-2">
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyPress}
+                            placeholder="Ask anything about me"
+                            className="flex-1 rounded-sm border border-[#2d3a4a] bg-[#151b24] px-4 py-2.5 text-[#e8eef4] outline-none ring-[#67e8f9] placeholder:text-[#6b7c90] focus:ring-1"
+                            disabled={isLoading}
+                            autoFocus
+                        />
+                        <button
+                            onClick={() => sendMessage()}
+                            disabled={!input.trim() || isLoading}
+                            className="rounded-sm bg-[#163044] px-4 py-2 text-[#67e8f9] transition-colors hover:bg-[#1d4d6b] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <Send className="h-5 w-5" />
+                        </button>
                     </div>
-                )}
-
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="border-t border-gray-200 p-4 bg-white rounded-b-lg">
-                <div className="flex gap-2">
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyPress}
-                        placeholder="Type your message..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-transparent text-gray-800"
-                        disabled={isLoading}
-                        autoFocus
-                    />
-                    <button
-                        onClick={sendMessage}
-                        disabled={!input.trim() || isLoading}
-                        className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <Send className="w-5 h-5" />
-                    </button>
                 </div>
             </div>
         </div>

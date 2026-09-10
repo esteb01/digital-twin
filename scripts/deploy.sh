@@ -35,6 +35,10 @@ else
   TF_APPLY_CMD=(terraform apply -var="project_name=$PROJECT_NAME" -var="environment=$ENVIRONMENT" -auto-approve)
 fi
 
+if [ -z "${TF_VAR_discord_webhook_url:-}" ] && [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+  export TF_VAR_discord_webhook_url="$DISCORD_WEBHOOK_URL"
+fi
+
 echo "🎯 Applying Terraform..."
 "${TF_APPLY_CMD[@]}"
 

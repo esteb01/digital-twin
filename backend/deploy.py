@@ -42,7 +42,16 @@ def main():
 
     # Copy application files
     print("Copying application files...")
-    for file in ["server.py", "lambda_handler.py", "context.py", "resources.py"]:
+    for file in [
+        "server.py",
+        "lambda_handler.py",
+        "context.py",
+        "resources.py",
+        "rag.py",
+        "router.py",
+        "agents.py",
+        "tools.py",
+    ]:
         if os.path.exists(file):
             shutil.copy2(file, "lambda-package/")
     
@@ -61,7 +70,7 @@ def main():
 
     # Show package size
     size_mb = os.path.getsize("lambda-deployment.zip") / (1024 * 1024)
-    print(f"✓ Created lambda-deployment.zip ({size_mb:.2f} MB)")
+    print(f"Created lambda-deployment.zip ({size_mb:.2f} MB)")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,36 @@
+name: Index career knowledge
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "knowledge/**"
+      - "backend/indexer.py"
+      - "backend/data/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-index
+          aws-region: ${{ secrets.DEFAULT_AWS_REGION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install indexer deps
+        run: pip install boto3
+      - name: Embed and write S3 Vectors
+        env:
+          DEFAULT_AWS_REGION: ${{ secrets.DEFAULT_AWS_REGION }}
+          S3_VECTOR_BUCKET: ${{ secrets.S3_VECTOR_BUCKET }}
+          S3_VECTOR_INDEX: career-knowledge
+        run: python backend/indexer.py

@@ -1,0 +1,9 @@
+I am a Mechatronics Engineer with an MSc in Applied Artificial Intelligence. I work at the boundary between physical systems and production ML.
+
+My master's thesis (official title: Real-Time Robotic Trajectory Evaluation via Surrogate Models and Deep Latent Representations, grade 9.1/10) replaced the physics engine of a 7-DoF KUKA IIWA with surrogate models: R² 0.933, 17,301x faster than the simulator, PINN collision recall 94.0%.
+
+At Managing Innovation Strategies I built ML pipelines on European Commission portal traffic: Random Forest over 59,000 sessions and LSTM forecasting from R² -0.693 to 0.69, with MLflow, Optuna and SHAP.
+
+At Getecsa I was a Software Engineer Trainee (QA) on a remote engagement whose client was Internet Brands / Nolo Legal.
+
+I also build this conversational digital twin on AWS with Terraform, Lambda, Bedrock, API Gateway, S3 and CloudFront.

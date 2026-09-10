@@ -1,0 +1,31 @@
+name: Nightly twin evaluation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 3 * * *"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-eval
+          aws-region: ${{ secrets.DEFAULT_AWS_REGION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install eval deps
+        run: pip install boto3
+      - name: Run heuristic + judge questions
+        env:
+          DEFAULT_AWS_REGION: ${{ secrets.DEFAULT_AWS_REGION }}
+          EVAL_API_URL: ${{ secrets.EVAL_API_URL }}
+        run: python backend/eval/run_eval.py

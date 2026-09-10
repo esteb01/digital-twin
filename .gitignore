@@ -5,6 +5,9 @@
 .terraform.lock.hcl
 terraform.tfstate.d/
 *.tfvars.secret
+secrets.auto.tfvars
+.tf-plan-remote/
+.bootstrap-state/
 
 # Lambda packages
 lambda-deployment.zip

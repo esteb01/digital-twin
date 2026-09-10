@@ -1,6 +1,19 @@
 @import 'tailwindcss';
 
-/* Smooth scrolling animation keyframe */
+:root {
+  --void: #07090d;
+  --panel: #10151c;
+  --steel: #1c2430;
+  --edge: #2d3a4a;
+  --mist: #c5d0dc;
+  --cyan: #67e8f9;
+}
+
+body {
+  color: var(--mist);
+  background: var(--void);
+}
+
 @keyframes bounce {
   0%,
   80%,
@@ -22,4 +35,138 @@
 
 .delay-200 {
   animation-delay: 0.2s;
+}
+
+@keyframes companion-patrol {
+  0% {
+    top: 14%;
+    left: 10px;
+  }
+  22% {
+    top: 12%;
+    left: calc(100% - 78px);
+  }
+  50% {
+    top: calc(100% - 168px);
+    left: calc(100% - 78px);
+  }
+  72% {
+    top: calc(100% - 168px);
+    left: 12px;
+  }
+  100% {
+    top: 14%;
+    left: 10px;
+  }
+}
+
+@keyframes companion-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.companion-bot {
+  position: fixed;
+  z-index: 30;
+  width: 64px;
+  pointer-events: none;
+  animation: companion-patrol 42s linear infinite;
+}
+
+.companion-lenses {
+  transform-origin: 40px 28px;
+  transition: transform 0.35s ease;
+}
+
+.companion-led {
+  animation: companion-pulse 2.4s ease-in-out infinite;
+}
+
+.companion-bot-attentive .companion-lenses {
+  transform: rotate(-10deg) translateY(-2px);
+}
+
+.twin-md p {
+  margin: 0 0 0.5rem;
+  white-space: pre-wrap;
+}
+
+.twin-md p:last-child {
+  margin-bottom: 0;
+}
+
+.twin-md strong {
+  color: #e8eef4;
+  font-weight: 600;
+}
+
+.twin-md em {
+  font-style: italic;
+}
+
+.twin-md ul,
+.twin-md ol {
+  margin: 0 0 0.5rem;
+  padding-left: 1.1rem;
+}
+
+.twin-md li {
+  margin: 0.15rem 0;
+}
+
+.twin-md a {
+  color: #67e8f9;
+  text-decoration: underline;
+}
+
+.twin-md code {
+  font-size: 0.9em;
+  color: #67e8f9;
+}
+
+.twin-md table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.8rem;
+}
+
+.twin-md th,
+.twin-md td {
+  border: 1px solid #2d3a4a;
+  padding: 0.25rem 0.45rem;
+  text-align: left;
+}
+
+@media (max-width: 767px) {
+  .companion-bot {
+    animation: none;
+    top: auto;
+    left: 10px;
+    bottom: 6.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion-bot {
+    animation: none;
+    top: 16%;
+    left: 10px;
+    bottom: auto;
+  }
+
+  .companion-led {
+    animation: none;
+  }
+
+  .companion-bot-attentive .companion-lenses {
+    transform: none;
+  }
 }
