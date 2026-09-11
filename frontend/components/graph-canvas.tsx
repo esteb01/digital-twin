@@ -42,6 +42,10 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
     }
   }, []);
 
+  useEffect(() => {
+    fgRef.current?.refresh();
+  }, [selectedId]);
+
   return (
     <div ref={wrapRef} className="graph-canvas">
       {size.width > 0 && (
@@ -54,19 +58,35 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
           showNavInfo={false}
           enableNodeDrag
           nodeLabel="name"
-          nodeRelSize={6}
-          nodeVal="val"
+          nodeRelSize={7}
+          nodeOpacity={0.95}
+          nodeResolution={24}
+          nodeVal={(node: GraphNode) => {
+            const base = Number((node as FacetNode).val ?? 10);
+            return node.id === selectedId ? base * 1.55 : base;
+          }}
           nodeColor={(node: GraphNode) =>
-            node.id === selectedId ? '#e8eef4' : (node as FacetNode).color
+            node.id === selectedId ? '#f8fafc' : (node as FacetNode).color
           }
-          linkColor={() => 'rgba(103, 232, 249, 0.28)'}
-          linkWidth={0.6}
-          linkOpacity={0.7}
+          linkColor={() => 'rgba(103, 232, 249, 0.38)'}
+          linkWidth={(link) => {
+            const src = typeof link.source === 'object' ? (link.source as GraphNode).id : link.source;
+            const tgt = typeof link.target === 'object' ? (link.target as GraphNode).id : link.target;
+            return src === selectedId || tgt === selectedId ? 1.6 : 0.7;
+          }}
+          linkOpacity={0.85}
           nodeThreeObject={(node: GraphNode) => {
+            const selected = node.id === selectedId;
             const sprite = new SpriteText(String(node.name ?? ''));
-            sprite.color = node.id === selectedId ? '#e8eef4' : ((node as FacetNode).color || '#c5d0dc');
-            sprite.textHeight = node.id === 'you' ? 7 : 5;
+            sprite.color = selected ? '#f8fafc' : '#e8eef4';
+            sprite.textHeight = selected ? 9 : node.id === 'you' ? 8 : 6.5;
             sprite.fontFace = 'IBM Plex Sans, sans-serif';
+            sprite.fontWeight = selected ? '600' : '500';
+            sprite.strokeWidth = 2.2;
+            sprite.strokeColor = '#07090d';
+            sprite.backgroundColor = selected ? 'rgba(22, 48, 68, 0.92)' : 'rgba(7, 9, 13, 0.72)';
+            sprite.padding = 2.4;
+            sprite.borderRadius = 2;
             return sprite;
           }}
           nodeThreeObjectExtend
