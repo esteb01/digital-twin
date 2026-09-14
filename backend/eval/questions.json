@@ -7,7 +7,8 @@
   {
     "id": "tfm-r2",
     "question": "What R² did your best surrogate model reach, and how much faster was it than the physics engine?",
-    "must_include": ["0.933", "17"]
+    "must_include": ["0.933"],
+    "must_include_any": ["17,301", "17301", "17.301", "1250"]
   },
   {
     "id": "mainstrat",

@@ -50,3 +50,7 @@ Mondragon Unibertsitatea · 9,1/10 · github.com/esteb01/TFM_Surrogate_Robot
 
 - Máster Universitario en IA Aplicada — Mondragon Unibertsitatea · 2024–2026
 - Ingeniería Mecatrónica — UDLAP · 2017–2022
+
+## Otros proyectos
+
+- Gemelo digital conversacional serverless — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — RAG sobre notas públicas de carrera (Amazon S3 Vectors), Bedrock, Lambda, API Gateway, S3, CloudFront, Terraform, GitHub Actions.

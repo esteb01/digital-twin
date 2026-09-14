@@ -34,6 +34,10 @@ def heuristic_score(item: dict, answer: str) -> list[str]:
     for needle in item.get("must_include") or []:
         if needle.lower() not in lower:
             issues.append(f"missing '{needle}'")
+    any_needles = item.get("must_include_any") or []
+    if any_needles and not any(needle.lower() in lower for needle in any_needles):
+        joined = ", ".join(f"'{needle}'" for needle in any_needles)
+        issues.append(f"missing any of {joined}")
     for needle in item.get("must_not_include") or []:
         if needle.lower() in lower:
             issues.append(f"leaked '{needle}'")
@@ -63,6 +67,7 @@ def main() -> None:
 
     items = json.loads(QUESTIONS_PATH.read_text(encoding="utf-8"))
     failures = 0
+    total = len(items)
     for item in items:
         try:
             answer = chat(args.api_url, item["question"])
@@ -83,6 +88,8 @@ def main() -> None:
         print(f"{status} {item['id']}: {'; '.join(issues) or 'ok'} | {verdict}")
         print(f"  {answer[:240].replace(chr(10), ' ')}")
 
+    passed = total - failures
+    print(f"{passed}/{total} passed heuristics, {failures} failed")
     if failures:
         raise SystemExit(f"{failures} evaluation failures")
     print("All evaluation questions passed heuristics.")

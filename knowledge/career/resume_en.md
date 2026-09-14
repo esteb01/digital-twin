@@ -54,7 +54,7 @@ Digital twin here is only a short gloss for the surrogate-model system.
 
 ## Additional Projects
 
-- Serverless conversational digital twin — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — Bedrock, Lambda, API Gateway, S3, CloudFront, 100% Terraform, GitHub Actions CI/CD including teardown.
+- Serverless conversational digital twin — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — RAG over public career notes (Amazon S3 Vectors), Bedrock, Lambda, API Gateway, S3, CloudFront, 100% Terraform, GitHub Actions CI/CD including teardown.
 - Federated learning for photovoltaic forecasting — Flower/FedAvg, team of 3.
 - Energy microgrid multi-agent system — FIPA-ACL, MOEA, Kafka/InfluxDB/Grafana, SHAP/LIME.
 
