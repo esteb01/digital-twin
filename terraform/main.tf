@@ -114,9 +114,25 @@ resource "aws_iam_role_policy_attachment" "lambda_bedrock" {
   role       = aws_iam_role.lambda_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_s3" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy" "lambda_memory" {
+  name = "${local.name_prefix}-lambda-memory"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "MemoryObjects"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "${aws_s3_bucket.memory.arn}/*"
+      }
+    ]
+  })
 }
 
 # Lambda function (Lambda Web Adapter + Function URL for response streaming)
@@ -128,9 +144,10 @@ resource "aws_lambda_function" "api" {
   source_code_hash = filebase64sha256("${path.module}/../backend/lambda-deployment.zip")
   runtime          = "python3.12"
   architectures    = ["x86_64"]
-  timeout          = var.lambda_timeout
-  publish          = local.cost.lambda_provisioned_concurrency > 0
-  layers           = ["arn:aws:lambda:eu-west-3:753240598075:layer:LambdaAdapterLayerX86:28"]
+  timeout                        = var.lambda_timeout
+  reserved_concurrent_executions = 5
+  publish                        = local.cost.lambda_provisioned_concurrency > 0
+  layers                         = ["arn:aws:lambda:eu-west-3:753240598075:layer:LambdaAdapterLayerX86:28"]
   tags             = local.common_tags
 
   environment {
@@ -165,65 +182,7 @@ resource "aws_lambda_function" "api" {
   depends_on = [aws_cloudfront_distribution.main]
 }
 
-# API Gateway HTTP API
-resource "aws_apigatewayv2_api" "main" {
-  name          = "${local.name_prefix}-api-gateway"
-  protocol_type = "HTTP"
-  tags          = local.common_tags
-
-  cors_configuration {
-    allow_credentials = false
-    allow_headers     = ["*"]
-    allow_methods     = ["GET", "POST", "OPTIONS"]
-    allow_origins     = ["*"]
-    max_age           = 300
-  }
-}
-
-resource "aws_apigatewayv2_stage" "default" {
-  api_id      = aws_apigatewayv2_api.main.id
-  name        = "$default"
-  auto_deploy = true
-  tags        = local.common_tags
-
-  default_route_settings {
-    throttling_burst_limit = var.api_throttle_burst_limit
-    throttling_rate_limit  = var.api_throttle_rate_limit
-  }
-}
-
-resource "aws_apigatewayv2_integration" "lambda" {
-  api_id           = aws_apigatewayv2_api.main.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = local.cost.lambda_provisioned_concurrency > 0 ? aws_lambda_alias.live[0].invoke_arn : aws_lambda_function.api.invoke_arn
-}
-
-# API Gateway Routes
-resource "aws_apigatewayv2_route" "get_root" {
-  api_id    = aws_apigatewayv2_api.main.id
-  route_key = "GET /"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_route" "post_chat" {
-  api_id    = aws_apigatewayv2_api.main.id
-  route_key = "POST /chat"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_route" "get_health" {
-  api_id    = aws_apigatewayv2_api.main.id
-  route_key = "GET /health"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_route" "post_chat_stream" {
-  api_id    = aws_apigatewayv2_api.main.id
-  route_key = "POST /chat/stream"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-# Public Function URL streams Bedrock tokens; API Gateway stays for eval JSON.
+# Public Function URL streams Bedrock tokens (site chat and eval).
 resource "aws_lambda_function_url" "api" {
   function_name      = aws_lambda_function.api.function_name
   authorization_type = "NONE"
@@ -244,15 +203,6 @@ resource "aws_lambda_permission" "function_url" {
   function_name          = aws_lambda_function.api.function_name
   principal              = "*"
   function_url_auth_type = "NONE"
-}
-
-# Lambda permission for API Gateway
-resource "aws_lambda_permission" "api_gw" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.api.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }
 
 # CloudFront distribution

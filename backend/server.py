@@ -22,7 +22,7 @@ app = FastAPI()
 
 INFERENCE_CONFIG = {"maxTokens": 800, "temperature": 0.7, "topP": 0.9}
 
-# API Gateway and Function URL attach CORS. Local uvicorn still needs the middleware.
+# Function URL attaches CORS. Local uvicorn still needs the middleware.
 _on_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME") or os.getenv("AWS_LAMBDA_EXEC_WRAPPER"))
 if not _on_lambda:
     origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -126,10 +126,6 @@ def save_store(session_id: str, store: Dict):
     file_path = os.path.join(MEMORY_DIR, get_memory_path(session_id))
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
-
-
-def load_conversation(session_id: str) -> List[Dict]:
-    return load_store(session_id)["messages"]
 
 
 ASK_CONTACT_NOTE = (
@@ -360,15 +356,6 @@ async def chat_stream(request: ChatRequest):
             "X-Accel-Buffering": "no",
         },
     )
-
-
-@app.get("/conversation/{session_id}")
-async def get_conversation(session_id: str):
-    try:
-        conversation = load_conversation(session_id)
-        return {"session_id": session_id, "messages": conversation}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

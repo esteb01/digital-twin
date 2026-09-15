@@ -41,7 +41,6 @@ if ($Environment -eq "prod") {
 }
 
 $ApiUrl        = terraform output -raw lambda_function_url
-$GatewayUrl    = terraform output -raw api_gateway_url
 $FrontendBucket = terraform output -raw s3_frontend_bucket
 try { $CustomUrl = terraform output -raw custom_domain_url } catch { $CustomUrl = "" }
 
@@ -65,4 +64,3 @@ if ($CustomUrl) {
     Write-Host "Custom domain  : $CustomUrl" -ForegroundColor Cyan
 }
 Write-Host "Chat Function URL : $ApiUrl" -ForegroundColor Cyan
-Write-Host "API Gateway       : $GatewayUrl" -ForegroundColor Cyan

@@ -206,13 +206,3 @@ resource "aws_lambda_provisioned_concurrency_config" "enhanced" {
   qualifier                         = aws_lambda_alias.live[0].name
   provisioned_concurrent_executions = local.cost.lambda_provisioned_concurrency
 }
-
-resource "aws_lambda_permission" "api_gw_alias" {
-  count         = local.cost.lambda_provisioned_concurrency > 0 ? 1 : 0
-  statement_id  = "AllowExecutionFromAPIGatewayAlias"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.api.function_name
-  qualifier     = aws_lambda_alias.live[0].name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
-}

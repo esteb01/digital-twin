@@ -62,6 +62,6 @@ Digital twin here is only a short gloss for the surrogate-model system.
 
 ## Skills
 
-Python, SQL, C++, scikit-learn, PyTorch, MLflow, Optuna, Docker, GitHub Actions, FastAPI, AWS (Lambda, Bedrock, API Gateway, S3, CloudFront), Terraform, SHAP, federated learning, multi-agent systems, RAG/LLMs, PyBullet.
+Python, SQL, C++, scikit-learn, PyTorch, MLflow, Optuna, Docker, GitHub Actions, FastAPI, AWS (Lambda, Bedrock, Function URL, S3, CloudFront), Terraform, SHAP, federated learning, multi-agent systems, RAG/LLMs, PyBullet.
 
 Spanish native · English C1

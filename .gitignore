@@ -36,6 +36,7 @@ venv/
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 .DS_Store
 Thumbs.db

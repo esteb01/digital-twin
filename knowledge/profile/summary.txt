@@ -8,4 +8,4 @@ At Managing Innovation Strategies I built ML pipelines on European Commission po
 
 At Getecsa I was a Software Engineer Trainee (QA) on a remote engagement whose client was Internet Brands / Nolo Legal.
 
-This conversational digital twin uses RAG over public documents (CV, thesis, this project) on AWS with Terraform, Lambda, Bedrock, S3 Vectors, API Gateway, S3 and CloudFront.
+This conversational digital twin uses RAG over public documents (CV, thesis, this project) on AWS with Terraform, Lambda, Bedrock, S3 Vectors, Lambda Function URL, S3 and CloudFront.
