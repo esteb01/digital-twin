@@ -9,13 +9,17 @@ import { FACET_NODES, type FacetNode } from '@/lib/graph-data';
 
 const GraphCanvas = dynamic(() => import('@/components/graph-canvas'), {
   ssr: false,
-  loading: () => <div className="graph-canvas" aria-hidden="true" />,
+  loading: () => (
+    <div className="graph-canvas graph-canvas-loading" role="status">
+      Loading hub…
+    </div>
+  ),
 });
 
 export default function Home() {
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<FacetNode | null>(null);
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [pendingPrompt, setPendingPrompt] = useState<string | undefined>();
 
   const askFromNode = (prompt: string) => {

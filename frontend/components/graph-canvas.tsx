@@ -126,7 +126,17 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 400);
     camera.position.set(62, 22, 74);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    } catch {
+      wrap.classList.add('graph-canvas-loading');
+      wrap.textContent = 'WebGL is required to show the graph.';
+      return () => {
+        wrap.textContent = '';
+        wrap.classList.remove('graph-canvas-loading');
+      };
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -137,11 +147,20 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
     labelsRenderer.domElement.className = 'hub-labels';
     wrap.appendChild(labelsRenderer.domElement);
 
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.62, 0.12);
-    composer.addPass(bloom);
-    composer.addPass(new OutputPass());
+    let composer: EffectComposer | undefined;
+    let bloom: UnrealBloomPass | undefined;
+    let useComposer = true;
+    try {
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.62, 0.12);
+      composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+    } catch {
+      composer = undefined;
+      bloom = undefined;
+      useComposer = false;
+    }
 
     scene.add(new THREE.HemisphereLight(0x4d7a96, 0x05070a, 0.55));
     const rim = new THREE.DirectionalLight(0x67e8f9, 0.65);
@@ -226,8 +245,8 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
-      composer.setSize(width, height);
-      bloom.setSize(width, height);
+      composer?.setSize(width, height);
+      bloom?.setSize(width, height);
       labelsRenderer.setSize(width, height);
     };
     resize();
@@ -271,7 +290,13 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
         if (core) core.scale.setScalar(0.92 + 0.08 * Math.sin(t * 3.2 + group.position.y));
       });
       controls.update();
-      composer.render();
+      try {
+        if (useComposer && composer) composer.render();
+        else renderer.render(scene, camera);
+      } catch {
+        useComposer = false;
+        renderer.render(scene, camera);
+      }
       labelsRenderer.render(scene, camera);
     };
     tick();
@@ -282,7 +307,7 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
       wrap.removeEventListener('pointermove', onPointerMove);
       wrap.removeEventListener('click', onClick);
       controls.dispose();
-      composer.dispose();
+      composer?.dispose();
       cell.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.Points) {
           obj.geometry.dispose();
