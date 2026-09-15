@@ -9,7 +9,7 @@ import { FACET_NODES, type FacetNode } from '@/lib/graph-data';
 
 const GraphCanvas = dynamic(() => import('@/components/graph-canvas'), {
   ssr: false,
-  loading: () => <div className="graph-canvas graph-canvas-loading">Loading graph…</div>,
+  loading: () => <div className="graph-canvas" aria-hidden="true" />,
 });
 
 export default function Home() {

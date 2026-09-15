@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  transpilePackages: ['react-force-graph-3d', 'three', 'three-spritetext'],
+  transpilePackages: ['three'],
 };
 
 export default nextConfig;
