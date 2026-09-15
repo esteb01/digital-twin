@@ -77,16 +77,21 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
           linkOpacity={0.85}
           nodeThreeObject={(node: GraphNode) => {
             const selected = node.id === selectedId;
+            const base = Number((node as FacetNode).val ?? 10);
+            const val = selected ? base * 1.55 : base;
+            const radius = 7 * Math.cbrt(val);
             const sprite = new SpriteText(String(node.name ?? ''));
             sprite.color = selected ? '#f8fafc' : '#e8eef4';
-            sprite.textHeight = selected ? 9 : node.id === 'you' ? 8 : 6.5;
+            sprite.textHeight = selected ? 7 : node.id === 'you' ? 6.5 : 5.5;
             sprite.fontFace = 'IBM Plex Sans, sans-serif';
             sprite.fontWeight = selected ? '600' : '500';
-            sprite.strokeWidth = 2.2;
+            sprite.strokeWidth = 1.6;
             sprite.strokeColor = '#07090d';
-            sprite.backgroundColor = selected ? 'rgba(22, 48, 68, 0.92)' : 'rgba(7, 9, 13, 0.72)';
-            sprite.padding = 2.4;
+            sprite.backgroundColor = selected ? 'rgba(22, 48, 68, 0.92)' : 'rgba(7, 9, 13, 0.78)';
+            sprite.padding = 1.6;
             sprite.borderRadius = 2;
+            sprite.center.set(0.5, 1);
+            sprite.position.y = -(radius + 1.8);
             return sprite;
           }}
           nodeThreeObjectExtend

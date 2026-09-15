@@ -15,7 +15,7 @@ I am not in a formal role right now. I build personal AI/ML projects, including 
 - **Model:** Amazon Bedrock on-demand, Nova Micro (`minimal` cost tier).
 - **RAG:** Career docs in `knowledge/` are chunked and embedded offline with Titan Text Embeddings V2 into Amazon S3 Vectors. The Lambda retrieves top chunks per message; indexing is a separate job, not done on every visit.
 - **Memory:** conversation history in a private S3 bucket.
-- **Infra:** 100% Terraform (`eu-west-3`).
+- **Infra:** 100% Terraform (`eu-west-3`). GitHub Actions deploys the `dev` workspace; that is the live stack behind erhdigitaltwin.com, not a separate staging site.
 - **CI/CD:** GitHub Actions — deploy on push to `main`, index on `knowledge/**` changes, nightly eval, controlled destroy.
 
 ## Cost

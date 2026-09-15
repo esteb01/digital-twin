@@ -98,7 +98,8 @@ def load_store(session_id: str) -> Dict:
             response = s3_client.get_object(Bucket=S3_BUCKET, Key=get_memory_path(session_id))
             return _normalize_store(json.loads(response["Body"].read().decode("utf-8")))
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchKey":
+            code = e.response["Error"]["Code"]
+            if code in ("NoSuchKey", "AccessDenied", "403"):
                 return _empty_store()
             raise
     file_path = os.path.join(MEMORY_DIR, get_memory_path(session_id))

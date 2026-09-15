@@ -122,6 +122,12 @@ resource "aws_iam_role_policy" "lambda_memory" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "MemoryList"
+        Effect = "Allow"
+        Action = ["s3:ListBucket"]
+        Resource = aws_s3_bucket.memory.arn
+      },
+      {
         Sid    = "MemoryObjects"
         Effect = "Allow"
         Action = [
