@@ -3,7 +3,10 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import { FACET_LINKS, FACET_NODES, type FacetNode } from '@/lib/graph-data';
 
@@ -23,9 +26,11 @@ const CUBE: [number, number, number][] = [
   [-1, -1, -1],
 ];
 
-const SPAN = 26;
-const CORE_R = 7.2;
-const SAT_R = 4.55;
+const SPAN = 28;
+const CORE_R = 6.6;
+const SAT_R = 4.1;
+const CYAN = 0x67e8f9;
+const AMBER = 0xfbbf24;
 
 function nodeRadius(id: string) {
   return id === 'you' ? CORE_R : SAT_R;
@@ -34,35 +39,59 @@ function nodeRadius(id: string) {
 function layout(): Map<string, THREE.Vector3> {
   const map = new Map<string, THREE.Vector3>();
   map.set('you', new THREE.Vector3(0, 0, 0));
-  const satellites = FACET_NODES.filter((node) => node.id !== 'you');
-  satellites.forEach((node, i) => {
+  FACET_NODES.filter((node) => node.id !== 'you').forEach((node, i) => {
     const [x, y, z] = CUBE[i % CUBE.length];
     map.set(node.id, new THREE.Vector3(x, y, z).normalize().multiplyScalar(SPAN));
   });
   return map;
 }
 
-function chromeMaterial(selected: boolean, isCore: boolean) {
+function shellMaterial() {
   return new THREE.MeshPhysicalMaterial({
-    color: selected ? 0xf3e6c4 : isCore ? 0xeef2f6 : 0xc5cdd6,
-    metalness: 0.94,
-    roughness: selected ? 0.28 : 0.2,
-    clearcoat: 0.45,
-    clearcoatRoughness: 0.22,
-    emissive: selected ? 0x4a3414 : 0x101820,
-    emissiveIntensity: selected ? 0.32 : 0.06,
+    color: 0x1c5366,
+    metalness: 0.28,
+    roughness: 0.24,
+    transmission: 0.18,
+    thickness: 0.9,
+    transparent: true,
+    opacity: 0.9,
+    emissive: 0x0e4454,
+    emissiveIntensity: 1.05,
   });
 }
 
-function makeStrut(a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, material: THREE.Material) {
+function coreMaterial(selected: boolean) {
+  return new THREE.MeshBasicMaterial({
+    color: selected ? AMBER : CYAN,
+    transparent: true,
+    opacity: 0.95,
+  });
+}
+
+function makeBeam(a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, material: THREE.Material) {
   const dir = new THREE.Vector3().subVectors(b, a);
   const length = Math.max(dir.length() - ra - rb, 0.01);
-  const geom = new THREE.CylinderGeometry(0.72, 0.72, length, 14);
+  const geom = new THREE.CylinderGeometry(0.22, 0.22, length, 10);
   const mesh = new THREE.Mesh(geom, material);
   mesh.position.copy(a).add(b).multiplyScalar(0.5);
   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
-  mesh.castShadow = false;
   return mesh;
+}
+
+function starfield() {
+  const count = 420;
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i += 1) {
+    positions[i * 3] = (Math.random() - 0.5) * 220;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 160;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 220;
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  return new THREE.Points(
+    geom,
+    new THREE.PointsMaterial({ color: 0x8fb4c8, size: 0.35, transparent: true, opacity: 0.55 }),
+  );
 }
 
 export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) {
@@ -84,43 +113,48 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
 
     const positions = layout();
     const byId = new Map(FACET_NODES.map((node) => [node.id, node]));
-    const meshes = new Map<string, THREE.Mesh>();
+    const shells = new Map<string, THREE.Mesh>();
+    const cores = new Map<string, THREE.Mesh>();
+    const groups = new Map<string, THREE.Group>();
     const labels = new Map<string, HTMLDivElement>();
+    let hoveredId: string | undefined;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x071018);
-    scene.fog = new THREE.Fog(0x071018, 70, 140);
+    scene.background = new THREE.Color(0x04070c);
+    scene.fog = new THREE.FogExp2(0x04070c, 0.012);
 
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
-    camera.position.set(56, 30, 68);
+    const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 400);
+    camera.position.set(62, 22, 74);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.15;
     wrap.appendChild(renderer.domElement);
 
     const labelsRenderer = new CSS2DRenderer();
-    labelsRenderer.domElement.className = 'atomium-labels';
+    labelsRenderer.domElement.className = 'hub-labels';
     wrap.appendChild(labelsRenderer.domElement);
 
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.62, 0.12);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
 
-    scene.add(new THREE.HemisphereLight(0xb9c9d8, 0x1a140c, 0.7));
-    const key = new THREE.DirectionalLight(0xf2f5f8, 2.1);
-    key.position.set(18, 32, 20);
-    scene.add(key);
-    const coreGlow = new THREE.PointLight(0xd7dee6, 1.4, 80);
-    scene.add(coreGlow);
+    scene.add(new THREE.HemisphereLight(0x4d7a96, 0x05070a, 0.55));
+    const rim = new THREE.DirectionalLight(0x67e8f9, 0.65);
+    rim.position.set(-20, 18, 12);
+    scene.add(rim);
+    scene.add(new THREE.PointLight(CYAN, 3.2, 110, 2));
+    scene.add(starfield());
 
-    const strutMat = new THREE.MeshPhysicalMaterial({
-      color: 0x8d99a6,
-      metalness: 0.88,
-      roughness: 0.32,
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: 0x3ec6d8,
+      transparent: true,
+      opacity: 0.7,
     });
-
     const cell = new THREE.Group();
     scene.add(cell);
 
@@ -128,53 +162,63 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
       const pos = positions.get(node.id);
       if (!pos) continue;
       const radius = nodeRadius(node.id);
-      const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(radius, 48, 32),
-        chromeMaterial(node.id === selectedRef.current, node.id === 'you'),
+      const group = new THREE.Group();
+      group.position.copy(pos);
+      group.userData.id = node.id;
+
+      const shell = new THREE.Mesh(new THREE.SphereGeometry(radius, 40, 28), shellMaterial());
+      shell.userData.id = node.id;
+      const core = new THREE.Mesh(
+        new THREE.SphereGeometry(radius * 0.52, 24, 16),
+        coreMaterial(node.id === selectedRef.current),
       );
-      mesh.position.copy(pos);
-      mesh.userData.id = node.id;
-      meshes.set(node.id, mesh);
-      cell.add(mesh);
+      core.userData.id = node.id;
 
       const el = document.createElement('div');
-      el.className = 'atomium-label';
+      el.className = 'hub-label';
       el.textContent = node.name;
       if (node.id === selectedRef.current) el.classList.add('is-selected');
-      labels.set(node.id, el);
       const label = new CSS2DObject(el);
-      label.position.set(0, -(radius + (node.id === 'you' ? 2.6 : 1.1)), 0);
-      mesh.add(label);
+      label.position.set(0, -(radius + (node.id === 'you' ? 2.8 : 1.35)), 0);
+
+      group.add(shell, core, label);
+      cell.add(group);
+      shells.set(node.id, shell);
+      cores.set(node.id, core);
+      groups.set(node.id, group);
+      labels.set(node.id, el);
     }
 
     for (const link of FACET_LINKS) {
       const a = positions.get(link.source);
       const b = positions.get(link.target);
       if (!a || !b) continue;
-      cell.add(makeStrut(a, b, nodeRadius(link.source), nodeRadius(link.target), strutMat));
+      cell.add(makeBeam(a, b, nodeRadius(link.source), nodeRadius(link.target), beamMat));
     }
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
+    controls.dampingFactor = 0.05;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.55;
-    controls.minDistance = 36;
-    controls.maxDistance = 110;
+    controls.autoRotateSpeed = 0.42;
+    controls.minDistance = 40;
+    controls.maxDistance = 120;
     controls.target.set(0, 0, 0);
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
 
-    const applySelect = (id?: string) => {
-      meshes.forEach((mesh, meshId) => {
-        const mat = mesh.material;
-        if (mat instanceof THREE.MeshPhysicalMaterial) mat.dispose();
-        mesh.material = chromeMaterial(meshId === id, meshId === 'you');
+    const paint = (id?: string, hot?: string) => {
+      cores.forEach((core, meshId) => {
+        const mat = core.material;
+        if (mat instanceof THREE.MeshBasicMaterial) {
+          mat.color.setHex(meshId === id ? AMBER : CYAN);
+        }
         labels.get(meshId)?.classList.toggle('is-selected', meshId === id);
+        labels.get(meshId)?.classList.toggle('is-hot', meshId === hot && meshId !== id);
       });
     };
-    applySelectRef.current = applySelect;
+    applySelectRef.current = (id?: string) => paint(id, hoveredId);
 
     const resize = () => {
       const width = wrap.clientWidth || 1;
@@ -182,6 +226,8 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      composer.setSize(width, height);
+      bloom.setSize(width, height);
       labelsRenderer.setSize(width, height);
     };
     resize();
@@ -193,12 +239,14 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
       pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects([...meshes.values()], false);
+      const hits = raycaster.intersectObjects([...shells.values(), ...cores.values()], false);
       return hits[0]?.object.userData.id as string | undefined;
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      wrap.style.cursor = pick(event.clientX, event.clientY) ? 'pointer' : 'grab';
+      hoveredId = pick(event.clientX, event.clientY);
+      wrap.style.cursor = hoveredId ? 'pointer' : 'grab';
+      paint(selectedRef.current, hoveredId);
     };
     const onClick = (event: PointerEvent) => {
       const id = pick(event.clientX, event.clientY);
@@ -210,11 +258,20 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
     wrap.addEventListener('pointermove', onPointerMove);
     wrap.addEventListener('click', onClick);
 
+    const clock = new THREE.Clock();
     let frame = 0;
     const tick = () => {
       frame = requestAnimationFrame(tick);
+      const t = clock.getElapsedTime();
+      groups.forEach((group, id) => {
+        const active = id === selectedRef.current || id === hoveredId;
+        const pulse = 1 + (active ? 0.07 + 0.03 * Math.sin(t * 5) : 0.015 * Math.sin(t * 2 + group.position.x));
+        group.scale.setScalar(pulse);
+        const core = cores.get(id);
+        if (core) core.scale.setScalar(0.92 + 0.08 * Math.sin(t * 3.2 + group.position.y));
+      });
       controls.update();
-      renderer.render(scene, camera);
+      composer.render();
       labelsRenderer.render(scene, camera);
     };
     tick();
@@ -225,14 +282,22 @@ export default function GraphCanvas({ selectedId, onSelect }: GraphCanvasProps) 
       wrap.removeEventListener('pointermove', onPointerMove);
       wrap.removeEventListener('click', onClick);
       controls.dispose();
-      pmrem.dispose();
+      composer.dispose();
       cell.traverse((obj) => {
-        if (obj instanceof THREE.Mesh) {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Points) {
+          obj.geometry.dispose();
+          const mat = obj.material;
+          if (Array.isArray(mat)) mat.forEach((item) => item.dispose());
+          else if (mat instanceof THREE.Material) mat.dispose();
+        }
+      });
+      scene.traverse((obj) => {
+        if (obj instanceof THREE.Points) {
           obj.geometry.dispose();
           if (obj.material instanceof THREE.Material) obj.material.dispose();
         }
       });
-      strutMat.dispose();
+      beamMat.dispose();
       renderer.dispose();
       renderer.domElement.remove();
       labelsRenderer.domElement.remove();
