@@ -144,10 +144,9 @@ resource "aws_lambda_function" "api" {
   source_code_hash = filebase64sha256("${path.module}/../backend/lambda-deployment.zip")
   runtime          = "python3.12"
   architectures    = ["x86_64"]
-  timeout                        = var.lambda_timeout
-  reserved_concurrent_executions = 5
-  publish                        = local.cost.lambda_provisioned_concurrency > 0
-  layers                         = ["arn:aws:lambda:eu-west-3:753240598075:layer:LambdaAdapterLayerX86:28"]
+  timeout          = var.lambda_timeout
+  publish          = local.cost.lambda_provisioned_concurrency > 0
+  layers           = ["arn:aws:lambda:eu-west-3:753240598075:layer:LambdaAdapterLayerX86:28"]
   tags             = local.common_tags
 
   environment {
