@@ -119,17 +119,18 @@ resource "aws_iam_role_policy_attachment" "lambda_s3" {
   role       = aws_iam_role.lambda_role.name
 }
 
-# Lambda function
+# Lambda function (Lambda Web Adapter + Function URL for response streaming)
 resource "aws_lambda_function" "api" {
   filename         = "${path.module}/../backend/lambda-deployment.zip"
   function_name    = "${local.name_prefix}-api"
   role             = aws_iam_role.lambda_role.arn
-  handler          = "lambda_handler.handler"
+  handler          = "run.sh"
   source_code_hash = filebase64sha256("${path.module}/../backend/lambda-deployment.zip")
   runtime          = "python3.12"
   architectures    = ["x86_64"]
   timeout          = var.lambda_timeout
   publish          = local.cost.lambda_provisioned_concurrency > 0
+  layers           = ["arn:aws:lambda:eu-west-3:753240598075:layer:LambdaAdapterLayerX86:28"]
   tags             = local.common_tags
 
   environment {
@@ -141,19 +142,22 @@ resource "aws_lambda_function" "api" {
           "https://www.${var.root_domain}"
         ] : []
       ))))
-      S3_BUCKET            = aws_s3_bucket.memory.id
-      USE_S3               = "true"
-      BEDROCK_MODEL_ID     = local.cost.bedrock_model_id
-      ROUTER_MODEL_ID      = local.cost.bedrock_model_id
-      COST_TIER            = var.cost_tier
-      S3_VECTOR_BUCKET     = aws_s3vectors_vector_bucket.rag.vector_bucket_name
-      S3_VECTOR_INDEX      = aws_s3vectors_index.rag.index_name
-      EMBEDDING_MODEL_ID   = var.embedding_model_id
-      EMBEDDING_DIMENSIONS = tostring(var.embedding_dimensions)
-      DISCORD_WEBHOOK_URL  = var.discord_webhook_url
-      GITHUB_OWNER         = var.github_owner
-      GITHUB_REPOS         = "digital-twin,TFM_Surrogate_Robot"
-      RAG_ENABLED          = "true"
+      S3_BUCKET                = aws_s3_bucket.memory.id
+      USE_S3                   = "true"
+      BEDROCK_MODEL_ID         = local.cost.bedrock_model_id
+      ROUTER_MODEL_ID          = local.cost.bedrock_model_id
+      COST_TIER                = var.cost_tier
+      S3_VECTOR_BUCKET         = aws_s3vectors_vector_bucket.rag.vector_bucket_name
+      S3_VECTOR_INDEX          = aws_s3vectors_index.rag.index_name
+      EMBEDDING_MODEL_ID       = var.embedding_model_id
+      EMBEDDING_DIMENSIONS     = tostring(var.embedding_dimensions)
+      DISCORD_WEBHOOK_URL      = var.discord_webhook_url
+      GITHUB_OWNER             = var.github_owner
+      GITHUB_REPOS             = "digital-twin,TFM_Surrogate_Robot"
+      RAG_ENABLED              = "true"
+      AWS_LAMBDA_EXEC_WRAPPER  = "/opt/bootstrap"
+      AWS_LWA_INVOKE_MODE      = "response_stream"
+      PORT                     = "8000"
     }
   }
 
@@ -211,6 +215,35 @@ resource "aws_apigatewayv2_route" "get_health" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "GET /health"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "post_chat_stream" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "POST /chat/stream"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
+# Public Function URL streams Bedrock tokens; API Gateway stays for eval JSON.
+resource "aws_lambda_function_url" "api" {
+  function_name      = aws_lambda_function.api.function_name
+  authorization_type = "NONE"
+  invoke_mode        = "RESPONSE_STREAM"
+
+  cors {
+    allow_credentials = false
+    allow_origins     = ["*"]
+    allow_methods     = ["GET", "POST"]
+    allow_headers     = ["content-type", "accept"]
+    max_age           = 300
+  }
+}
+
+resource "aws_lambda_permission" "function_url" {
+  statement_id           = "AllowPublicFunctionUrl"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.api.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
 }
 
 # Lambda permission for API Gateway

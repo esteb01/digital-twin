@@ -49,5 +49,11 @@
     "id": "pinn",
     "question": "What happened to collision recall when you used a PINN?",
     "must_include": ["94"]
+  },
+  {
+    "id": "where-work",
+    "question": "Where are you working right now?",
+    "must_not_include": ["currently working as"],
+    "must_include_any": ["personal", "not in a formal", "no formal"]
   }
 ]

@@ -40,7 +40,8 @@ if ($Environment -eq "prod") {
     terraform apply -var="project_name=$ProjectName" -var="environment=$Environment" -auto-approve
 }
 
-$ApiUrl        = terraform output -raw api_gateway_url
+$ApiUrl        = terraform output -raw lambda_function_url
+$GatewayUrl    = terraform output -raw api_gateway_url
 $FrontendBucket = terraform output -raw s3_frontend_bucket
 try { $CustomUrl = terraform output -raw custom_domain_url } catch { $CustomUrl = "" }
 
@@ -63,4 +64,5 @@ Write-Host "CloudFront URL : $CfUrl" -ForegroundColor Cyan
 if ($CustomUrl) {
     Write-Host "Custom domain  : $CustomUrl" -ForegroundColor Cyan
 }
-Write-Host "API Gateway    : $ApiUrl" -ForegroundColor Cyan
+Write-Host "Chat Function URL : $ApiUrl" -ForegroundColor Cyan
+Write-Host "API Gateway       : $GatewayUrl" -ForegroundColor Cyan

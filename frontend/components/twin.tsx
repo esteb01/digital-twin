@@ -17,7 +17,14 @@ interface Message {
     content: string;
     timestamp: Date;
     sources?: Source[];
+    intent?: string;
+    error?: boolean;
 }
+
+type Chip = { label: string; prompt: string };
+
+const CHIP_CLASS =
+    'rounded-sm border border-[#2d3a4a] bg-[#151b24] px-3 py-1.5 text-sm text-[#c5d0dc] transition-colors hover:border-[#67e8f9]/50 hover:text-[#e8eef4] disabled:cursor-not-allowed disabled:opacity-50';
 
 type TwinProps = {
     onBusy?: (busy: boolean) => void;
@@ -26,11 +33,36 @@ type TwinProps = {
     onPromptConsumed?: () => void;
 };
 
-const CHIPS = [
+const CHIPS: Chip[] = [
     { label: 'Thesis', prompt: "What is your master's thesis about?" },
     { label: 'Work', prompt: 'Where have you worked?' },
     { label: 'This project', prompt: 'How is this digital twin built and deployed?' },
-] as const;
+];
+
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+
+const FOLLOWUPS: Record<string, Chip[]> = {
+    tfm: [
+        { label: '17,301× speedup', prompt: 'How much faster were the surrogate models than the physics engine?' },
+        { label: 'PINN recall', prompt: 'How did the Physics-Informed Neural Network change collision detection recall?' },
+        { label: 'Official title', prompt: "What is the official title of your master's thesis?" },
+    ],
+    experience: [
+        { label: 'LSTM R² 0.69', prompt: 'What R² did your LSTM traffic forecast reach at Managing Innovation Strategies?' },
+        { label: 'Getecsa remote', prompt: 'What did you do at Getecsa for Internet Brands / Nolo Legal?' },
+        { label: 'SHAP', prompt: 'How did you use SHAP in the MainStrat internship?' },
+    ],
+    project: [
+        { label: 'Public documents', prompt: 'Which public documents does this twin retrieve with RAG?' },
+        { label: 'Terraform teardown', prompt: 'How is this digital twin deployed and torn down with Terraform?' },
+        { label: 'How it is built', prompt: 'How is this digital twin built and deployed?' },
+    ],
+    other: CHIPS,
+};
+
+function chipsForIntent(intent?: string): Chip[] {
+    return FOLLOWUPS[intent ?? ''] ?? FOLLOWUPS.other;
+}
 
 export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptConsumed }: TwinProps) {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -52,6 +84,81 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
         onBusy?.(isLoading);
     }, [isLoading, onBusy]);
 
+    const applyAssistantResult = (
+        assistantId: string,
+        data: { response?: string; session_id?: string; sources?: Source[]; intent?: string },
+        replaceContent: boolean,
+    ) => {
+        if (data.session_id) {
+            setSessionId(data.session_id);
+        }
+        setMessages(prev =>
+            prev.map((message) =>
+                message.id === assistantId
+                    ? {
+                          ...message,
+                          content: replaceContent ? (data.response || message.content) : message.content,
+                          sources: data.sources || [],
+                          intent: data.intent || 'other',
+                      }
+                    : message,
+            ),
+        );
+    };
+
+    const postChat = async (payload: { message: string; session_id?: string }) => {
+        const response = await fetch(`${API_BASE}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error('Failed to send message');
+        return response.json();
+    };
+
+    const consumeStream = async (
+        payload: { message: string; session_id?: string },
+        onText: (chunk: string) => void,
+    ) => {
+        const response = await fetch(`${API_BASE}/chat/stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'text/event-stream',
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!response.ok || !response.body) {
+            throw new Error('Failed to stream message');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let donePayload: { session_id?: string; sources?: Source[]; intent?: string } | null = null;
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const parts = buffer.split('\n\n');
+            buffer = parts.pop() ?? '';
+            for (const part of parts) {
+                const line = part.split('\n').find((entry) => entry.startsWith('data: '));
+                if (!line) continue;
+                const event = JSON.parse(line.slice(6));
+                if (event.error) throw new Error(event.error);
+                if (event.text) onText(event.text);
+                if (event.done) {
+                    donePayload = event;
+                }
+            }
+        }
+
+        if (!donePayload) throw new Error('Stream ended without a done event');
+        return donePayload;
+    };
+
     const sendMessage = async (raw?: string) => {
         const content = (raw ?? input).trim();
         if (!content || isLoading) return;
@@ -62,49 +169,53 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
             content,
             timestamp: new Date(),
         };
+        const assistantId = (Date.now() + 1).toString();
+        const assistantMessage: Message = {
+            id: assistantId,
+            role: 'assistant',
+            content: '',
+            timestamp: new Date(),
+        };
 
-        setMessages(prev => [...prev, userMessage]);
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
         setInput('');
         setIsLoading(true);
 
+        const payload = {
+            message: userMessage.content,
+            session_id: sessionId || undefined,
+        };
+
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: userMessage.content,
-                    session_id: sessionId || undefined,
-                }),
-            });
-
-            if (!response.ok) throw new Error('Failed to send message');
-
-            const data = await response.json();
-
-            if (!sessionId) {
-                setSessionId(data.session_id);
+            try {
+                const done = await consumeStream(payload, (chunk) => {
+                    setMessages(prev =>
+                        prev.map((message) =>
+                            message.id === assistantId
+                                ? { ...message, content: message.content + chunk }
+                                : message,
+                        ),
+                    );
+                });
+                applyAssistantResult(assistantId, done, false);
+            } catch (streamError) {
+                console.error('Stream failed, falling back to /chat', streamError);
+                const data = await postChat(payload);
+                applyAssistantResult(assistantId, data, true);
             }
-
-            const assistantMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: data.response,
-                timestamp: new Date(),
-                sources: data.sources || [],
-            };
-
-            setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
             console.error('Error:', error);
-            const errorMessage: Message = {
-                id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: 'Sorry, I encountered an error. Please try again.',
-                timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, errorMessage]);
+            setMessages(prev =>
+                prev.map((message) =>
+                    message.id === assistantId
+                        ? {
+                              ...message,
+                              content: 'Sorry, I encountered an error. Please try again.',
+                              error: true,
+                          }
+                        : message,
+                ),
+            );
         } finally {
             setIsLoading(false);
             setTimeout(() => {
@@ -148,7 +259,7 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
                                 type="button"
                                 onClick={() => sendMessage(chip.prompt)}
                                 disabled={isLoading}
-                                className="rounded-sm border border-[#2d3a4a] bg-[#151b24] px-3 py-1.5 text-sm text-[#c5d0dc] transition-colors hover:border-[#67e8f9]/50 hover:text-[#e8eef4] disabled:cursor-not-allowed disabled:opacity-50"
+                                className={CHIP_CLASS}
                             >
                                 {chip.label}
                             </button>
@@ -159,13 +270,22 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
 
             <div className={`flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-[#2d3a4a] bg-[#10151c]/90 shadow-[0_0_80px_rgba(103,232,249,0.06)] ${compact ? '' : 'min-h-[28rem]'}`}>
                 <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
-                    {messages.map((message) => (
+                    {messages.map((message, index) => {
+                        const isLastAssistant =
+                            message.role === 'assistant' &&
+                            !message.error &&
+                            !isLoading &&
+                            index === messages.length - 1;
+                        const followups = isLastAssistant ? chipsForIntent(message.intent) : [];
+
+                        return (
                         <div
                             key={message.id}
                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
+                            <div className="max-w-[78%]">
                             <div
-                                className={`max-w-[78%] rounded-sm px-4 py-3 ${
+                                className={`rounded-sm px-4 py-3 ${
                                     message.role === 'user'
                                         ? 'border border-[#67e8f9]/30 bg-[#163044] text-[#e8eef4]'
                                         : 'border border-[#2d3a4a] bg-[#151b24] text-[#c5d0dc]'
@@ -173,6 +293,7 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
                             >
                                 {message.role === 'assistant' ? (
                                     <div className="twin-md">
+                                        {message.content ? (
                                         <ReactMarkdown
                                             skipHtml
                                             remarkPlugins={[remarkGfm]}
@@ -186,6 +307,9 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
                                         >
                                             {message.content}
                                         </ReactMarkdown>
+                                        ) : (
+                                            <p className="text-sm text-[#67e8f9]/80">…</p>
+                                        )}
                                     </div>
                                 ) : (
                                     <p className="whitespace-pre-wrap">{message.content}</p>
@@ -212,16 +336,26 @@ export default function Twin({ onBusy, compact = false, pendingPrompt, onPromptC
                                     {message.timestamp.toLocaleTimeString()}
                                 </p>
                             </div>
-                        </div>
-                    ))}
-
-                    {isLoading && (
-                        <div className="flex justify-start">
-                            <div className="border border-[#2d3a4a] bg-[#151b24] px-4 py-3 text-sm text-[#67e8f9]/80">
-                                …
+                            {followups.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {followups.map((chip) => (
+                                        <button
+                                            key={chip.label}
+                                            type="button"
+                                            onClick={() => sendMessage(chip.prompt)}
+                                            disabled={isLoading}
+                                            className={CHIP_CLASS}
+                                        >
+                                            {chip.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                             </div>
                         </div>
-                    )}
+                        );
+                    })}
+
 
                     <div ref={messagesEndRef} />
                 </div>

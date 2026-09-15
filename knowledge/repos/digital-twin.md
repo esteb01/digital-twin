@@ -8,7 +8,7 @@ This project is a conversational assistant that answers questions about Esteban 
 ## Architecture
 
 - Frontend: Next.js static export on S3 + CloudFront
-- API: FastAPI on AWS Lambda behind API Gateway
+- API: FastAPI on AWS Lambda. The site chat streams over a Lambda Function URL (`POST /chat/stream`). `POST /chat` JSON remains for eval.
 - Model: Amazon Bedrock on-demand (Nova Micro in the minimal cost tier)
 - Memory: conversation history in a private S3 bucket
 - Infrastructure: 100% Terraform
@@ -25,6 +25,6 @@ A monthly AWS Budget ($30) emails at 50/80/100%. At 100% a Budget Action attache
 ## What this twin can talk about
 
 - The official TFM title, metrics (R² 0.933, 17,301x, PINN recall), and KUKA IIWA setup
-- Work at Managing Innovation Strategies, Getecsa / Internet Brands, Hammerbyte, Oracle ONE
+- Work at Managing Innovation Strategies, Getecsa / Internet Brands, Hammerbyte, Oracle ONE (past roles; not a current employer)
 - How this AWS project itself is built
 - Public GitHub activity on esteb01/digital-twin and esteb01/TFM_Surrogate_Robot

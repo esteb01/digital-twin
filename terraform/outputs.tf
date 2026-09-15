@@ -3,6 +3,11 @@ output "api_gateway_url" {
   value       = aws_apigatewayv2_api.main.api_endpoint
 }
 
+output "lambda_function_url" {
+  description = "Lambda Function URL (response streaming for the site chat)"
+  value       = aws_lambda_function_url.api.function_url
+}
+
 output "cloudfront_url" {
   description = "URL of the CloudFront distribution"
   value       = "https://${aws_cloudfront_distribution.main.domain_name}"

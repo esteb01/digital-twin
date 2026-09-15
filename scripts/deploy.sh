@@ -42,7 +42,8 @@ fi
 echo "🎯 Applying Terraform..."
 "${TF_APPLY_CMD[@]}"
 
-API_URL=$(terraform output -raw api_gateway_url)
+API_URL=$(terraform output -raw lambda_function_url)
+GATEWAY_URL=$(terraform output -raw api_gateway_url)
 FRONTEND_BUCKET=$(terraform output -raw s3_frontend_bucket)
 CUSTOM_URL=$(terraform output -raw custom_domain_url 2>/dev/null || true)
 
@@ -64,4 +65,5 @@ echo "🌐 CloudFront URL : $(terraform -chdir=terraform output -raw cloudfront_
 if [ -n "$CUSTOM_URL" ]; then
   echo "🔗 Custom domain  : $CUSTOM_URL"
 fi
-echo "📡 API Gateway    : $API_URL"
+echo "📡 Chat Function URL : $API_URL"
+echo "📡 API Gateway       : $GATEWAY_URL"

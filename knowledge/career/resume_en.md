@@ -9,6 +9,8 @@ LinkedIn: linkedin.com/in/estebanruizh · GitHub: github.com/esteb01
 
 I am an AI Engineer with an MSc in Applied Artificial Intelligence. I focus on the full machine learning production lifecycle: predictive modeling, explainability and cloud deployment. I combine applied experience in classification, time-series forecasting and MLOps with a research thesis on surrogate models, plus personal serverless deployment projects on AWS.
 
+I am not in a formal role right now. I build personal projects, including this digital twin. Last formal role: AI Engineer Intern at Managing Innovation Strategies (ended June 2025). Open to AI/ML and MLOps roles.
+
 ## Professional Experience
 
 ### AI Engineer Intern · Managing Innovation Strategies
@@ -18,7 +20,7 @@ Machine learning pipelines on web traffic data from European Commission institut
 
 - Reclassified over 59,000 unidentified web sessions and revealed that more than 50% behaved as aggressive scanners, by building a Random Forest classifier with SMOTE.
 - SHAP-based explainability analysis for an institutional client.
-- Improved forecasting of key web traffic metrics from a baseline with negative R² (-0.693) to an R² of 0.69 on 365-day multivariate prediction, using multi-step LSTM models.
+- Improved 365-day multivariate traffic forecasting from a weak baseline to an R² of 0.69, using multi-step LSTM models.
 - MLflow and Optuna for reproducibility and hyperparameter optimization.
 
 ### Software Engineer Trainee (QA) · Getecsa — Client: Internet Brands / Nolo Legal
@@ -54,7 +56,7 @@ Digital twin here is only a short gloss for the surrogate-model system.
 
 ## Additional Projects
 
-- Serverless conversational digital twin — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — RAG over public career notes (Amazon S3 Vectors), Bedrock, Lambda, API Gateway, S3, CloudFront, 100% Terraform, GitHub Actions CI/CD including teardown.
+- Serverless conversational digital twin — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — RAG over public documents (CV, thesis, this project), Bedrock, S3 Vectors, Lambda, CloudFront, 100% Terraform, GitHub Actions CI/CD including teardown.
 - Federated learning for photovoltaic forecasting — Flower/FedAvg, team of 3.
 - Energy microgrid multi-agent system — FIPA-ACL, MOEA, Kafka/InfluxDB/Grafana, SHAP/LIME.
 

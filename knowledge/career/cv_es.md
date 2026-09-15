@@ -9,6 +9,8 @@ LinkedIn: linkedin.com/in/estebanruizh · GitHub: github.com/esteb01
 
 Ingeniero de IA con Máster Universitario en Inteligencia Artificial Aplicada. Ciclo completo de machine learning en producción: modelado predictivo, explicabilidad y despliegue en nube. TFM de investigación en modelos surrogados y proyectos serverless en AWS.
 
+No estoy en un rol formal ahora. Construyo proyectos personales, incluido este gemelo digital. Último rol formal: prácticas de Ingeniero de IA en Managing Innovation Strategies (hasta junio 2025). Abierto a roles de AI/ML y MLOps.
+
 ## Experiencia
 
 ### Ingeniero de IA (Prácticas) · Managing Innovation Strategies
@@ -18,7 +20,7 @@ Pipelines de ML sobre tráfico de portales institucionales de la Comisión Europ
 
 - Reclasificación de más de 59.000 sesiones; más del 50 % se comportaba como escáneres agresivos (Random Forest + SMOTE).
 - Explicabilidad SHAP.
-- Previsión LSTM: de R² -0,693 a R² 0,69 a 365 días.
+- Previsión LSTM a 365 días: de un baseline débil a R² 0,69.
 - MLflow y Optuna.
 
 ### Software Engineer Trainee (QA) · Getecsa — Cliente: Internet Brands / Nolo Legal
@@ -53,4 +55,4 @@ Mondragon Unibertsitatea · 9,1/10 · github.com/esteb01/TFM_Surrogate_Robot
 
 ## Otros proyectos
 
-- Gemelo digital conversacional serverless — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — RAG sobre notas públicas de carrera (Amazon S3 Vectors), Bedrock, Lambda, API Gateway, S3, CloudFront, Terraform, GitHub Actions.
+- Gemelo digital conversacional serverless — https://erhdigitaltwin.com — github.com/esteb01/digital-twin — RAG sobre documentos públicos (CV, TFM, este proyecto), Bedrock, S3 Vectors, Lambda, CloudFront, Terraform, GitHub Actions.

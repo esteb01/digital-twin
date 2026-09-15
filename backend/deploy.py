@@ -1,7 +1,21 @@
 import os
 import shutil
+import time
 import zipfile
 import subprocess
+
+
+def _write_zip_member(zipf, file_path, arcname, executable=False):
+    if not executable:
+        zipf.write(file_path, arcname)
+        return
+    info = zipfile.ZipInfo(arcname.replace("\\", "/"))
+    info.date_time = time.localtime()[:6]
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.create_system = 3
+    info.external_attr = 0o100755 << 16
+    with open(file_path, "rb") as handle:
+        zipf.writestr(info, handle.read())
 
 
 def main():
@@ -51,6 +65,7 @@ def main():
         "router.py",
         "agents.py",
         "tools.py",
+        "run.sh",
     ]:
         if os.path.exists(file):
             shutil.copy2(file, "lambda-package/")
@@ -66,7 +81,12 @@ def main():
             for file in files:
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, "lambda-package")
-                zipf.write(file_path, arcname)
+                _write_zip_member(
+                    zipf,
+                    file_path,
+                    arcname,
+                    executable=os.path.basename(file) == "run.sh",
+                )
 
     # Show package size
     size_mb = os.path.getsize("lambda-deployment.zip") / (1024 * 1024)

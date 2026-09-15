@@ -58,7 +58,7 @@ export const FACET_NODES: FacetNode[] = [
       'AI Engineer Intern at Managing Innovation Strategies — production ML on European Commission portal traffic.',
     facts: [
       'Random Forest over 59,000 sessions; more than half behaved as aggressive scanners.',
-      'LSTM forecasting went from R² −0.693 to 0.69 on a 365-day multivariate horizon.',
+      'LSTM forecasting improved from a weak baseline to an R² of 0.69 on a 365-day multivariate horizon.',
       'MLflow, Optuna, and SHAP. Institutional traffic, not a public dataset.',
     ],
     askPrompt: 'What did you do in your MLOps internship?',
@@ -85,8 +85,8 @@ export const FACET_NODES: FacetNode[] = [
     color: '#67e8f9',
     summary: 'This site answers questions about my career. It is not the robotics thesis.',
     facts: [
-      'Ask about my thesis, jobs, cooking, games, or how this project is built.',
-      'Serverless on AWS: Lambda, Bedrock, S3, CloudFront, and Terraform.',
+      'RAG over public documents (CV, thesis, this project).',
+      'Serverless on AWS: Lambda, Bedrock, S3 Vectors, CloudFront, and Terraform.',
     ],
     links: [{ label: 'GitHub', href: 'https://github.com/esteb01/digital-twin' }],
     askPrompt: 'How is this digital twin built and deployed?',
