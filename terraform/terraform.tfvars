@@ -1,6 +1,6 @@
 project_name               = "twin"
 environment                = "dev"
-bedrock_model_id           = "eu.amazon.nova-micro-v1:0"
+bedrock_model_id           = "eu.amazon.nova-lite-v1:0"
 lambda_timeout             = 60
 use_custom_domain          = true
 root_domain                = "erhdigitaltwin.com"

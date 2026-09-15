@@ -1,6 +1,6 @@
 I am a Mechatronics Engineer with an MSc in Applied Artificial Intelligence. My work sits at the boundary between physical systems and production ML.
 
-I am not in a formal role right now. I build personal AI/ML projects, including this conversational digital twin. My last formal role was AI Engineer Intern at Managing Innovation Strategies (ended June 2025). I am open to AI/ML and MLOps roles.
+I am not in a formal role right now. I build personal AI/ML projects, including this conversational digital twin. My last formal role was AI Engineer Intern at Managing Innovation Strategies (ended June 2025). I am open to work in general; I would rather something related to technology.
 
 My master's thesis (official title: Real-Time Robotic Trajectory Evaluation via Surrogate Models and Deep Latent Representations, grade 9.1/10) replaced the physics engine of a 7-DoF KUKA IIWA with surrogate models: R² 0.933, 17,301x faster than the simulator, PINN collision recall 94.0%.
 

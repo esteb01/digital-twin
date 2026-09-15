@@ -1,4 +1,4 @@
-"""Nightly / on-demand fidelity check. Uses Nova Micro as judge. Costs cents."""
+"""Nightly / on-demand fidelity check. Uses the live Bedrock chat model as judge. Costs cents."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import boto3
 
 QUESTIONS_PATH = Path(__file__).with_name("questions.json")
 AWS_REGION = os.getenv("AWS_REGION") or os.getenv("DEFAULT_AWS_REGION") or "eu-west-3"
-JUDGE_MODEL = os.getenv("ROUTER_MODEL_ID", "eu.amazon.nova-micro-v1:0")
+JUDGE_MODEL = os.getenv("ROUTER_MODEL_ID", "eu.amazon.nova-lite-v1:0")
 
 
 def chat(api_url: str, question: str) -> str:

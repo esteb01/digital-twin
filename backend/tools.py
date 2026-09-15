@@ -21,7 +21,7 @@ GITHUB_REPOS = [
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
 USER_AGENT = "esteban-digital-twin/1.0"
 AWS_REGION = os.getenv("AWS_REGION") or os.getenv("DEFAULT_AWS_REGION") or "eu-west-3"
-BRIEFING_MODEL_ID = os.getenv("ROUTER_MODEL_ID", "eu.amazon.nova-micro-v1:0")
+BRIEFING_MODEL_ID = os.getenv("ROUTER_MODEL_ID", "eu.amazon.nova-lite-v1:0")
 _bedrock = boto3.client("bedrock-runtime", region_name=AWS_REGION)
 
 _BRIEFING_SYSTEM = (

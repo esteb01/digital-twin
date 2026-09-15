@@ -4,7 +4,7 @@ Live site: [erhdigitaltwin.com](https://erhdigitaltwin.com)
 
 Conversational assistant that answers questions about [Esteban Ruiz](https://www.linkedin.com/in/estebanruizh/)'s public professional record (CV, master's thesis, this project). It is **not** the robotics thesis. That work has its own title and repository: [TFM_Surrogate_Robot](https://github.com/esteb01/TFM_Surrogate_Robot).
 
-I am not in a formal role right now. I build personal AI/ML projects, including this twin. Last formal role: AI Engineer Intern at Managing Innovation Strategies (ended June 2025).
+I am not in a formal role right now. I build personal AI/ML projects, including this twin. Last formal role: AI Engineer Intern at Managing Innovation Strategies (ended June 2025). Open to work in general; I would rather something related to technology.
 
 ## Stack
 
@@ -12,7 +12,7 @@ I am not in a formal role right now. I build personal AI/ML projects, including 
 - **API:** FastAPI on AWS Lambda (Python 3.12).
 - **Chat (browser):** Lambda Function URL + [Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), `POST /chat/stream` (SSE from Bedrock `converse_stream`).
 - **Chat (eval / JSON):** `POST /chat` returns the full reply. Nightly eval should call the Function URL (`EVAL_API_URL`).
-- **Model:** Amazon Bedrock on-demand, Nova Micro (`minimal` cost tier).
+- **Model:** Amazon Bedrock on-demand, Nova Lite (`minimal` cost tier).
 - **RAG:** Career docs in `knowledge/` are chunked and embedded offline with Titan Text Embeddings V2 into Amazon S3 Vectors. The Lambda retrieves top chunks per message; indexing is a separate job, not done on every visit.
 - **Memory:** conversation history in a private S3 bucket.
 - **Infra:** 100% Terraform (`eu-west-3`). GitHub Actions deploys the `dev` workspace; that is the live stack behind erhdigitaltwin.com, not a separate staging site.

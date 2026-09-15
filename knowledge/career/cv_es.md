@@ -9,7 +9,7 @@ LinkedIn: linkedin.com/in/estebanruizh · GitHub: github.com/esteb01
 
 Ingeniero de IA con Máster Universitario en Inteligencia Artificial Aplicada. Ciclo completo de machine learning en producción: modelado predictivo, explicabilidad y despliegue en nube. TFM de investigación en modelos surrogados y proyectos serverless en AWS.
 
-No estoy en un rol formal ahora. Construyo proyectos personales, incluido este gemelo digital. Último rol formal: prácticas de Ingeniero de IA en Managing Innovation Strategies (hasta junio 2025). Abierto a roles de AI/ML y MLOps.
+No estoy en un rol formal ahora. Construyo proyectos personales, incluido este gemelo digital. Último rol formal: prácticas de Ingeniero de IA en Managing Innovation Strategies (hasta junio 2025). Abierto a trabajar en general; prefiero algo relacionado con tecnología.
 
 ## Experiencia
 

@@ -9,7 +9,7 @@ This project is a conversational assistant that answers questions about Esteban 
 
 - Frontend: Next.js static export on S3 + CloudFront
 - API: FastAPI on AWS Lambda. The site chat streams over a Lambda Function URL (`POST /chat/stream`). `POST /chat` JSON remains for eval.
-- Model: Amazon Bedrock on-demand (Nova Micro in the minimal cost tier)
+- Model: Amazon Bedrock on-demand (Nova Lite in the minimal cost tier)
 - Memory: conversation history in a private S3 bucket
 - Infrastructure: 100% Terraform
 - CI/CD: GitHub Actions, including a controlled destroy workflow for cost control

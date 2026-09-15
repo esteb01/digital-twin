@@ -9,7 +9,7 @@ LinkedIn: linkedin.com/in/estebanruizh · GitHub: github.com/esteb01
 
 I am an AI Engineer with an MSc in Applied Artificial Intelligence. I focus on the full machine learning production lifecycle: predictive modeling, explainability and cloud deployment. I combine applied experience in classification, time-series forecasting and MLOps with a research thesis on surrogate models, plus personal serverless deployment projects on AWS.
 
-I am not in a formal role right now. I build personal projects, including this digital twin. Last formal role: AI Engineer Intern at Managing Innovation Strategies (ended June 2025). Open to AI/ML and MLOps roles.
+I am not in a formal role right now. I build personal projects, including this digital twin. Last formal role: AI Engineer Intern at Managing Innovation Strategies (ended June 2025). Open to work in general; I would rather something related to technology.
 
 ## Professional Experience
 

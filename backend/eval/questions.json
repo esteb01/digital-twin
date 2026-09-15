@@ -55,5 +55,17 @@
     "question": "Where are you working right now?",
     "must_not_include": ["currently working as"],
     "must_include_any": ["personal", "not in a formal", "no formal"]
+  },
+  {
+    "id": "hammerbyte",
+    "question": "Did you work in video games? What about Hammerbyte?",
+    "must_include": ["Hammerbyte"],
+    "must_not_include": ["haven't specifically worked"]
+  },
+  {
+    "id": "open-to-work",
+    "question": "Are you open to work in videogames again?",
+    "must_include_any": ["Hammerbyte", "GambitGun", "Unreal"],
+    "must_not_include": ["haven't specifically worked", "only want AI"]
   }
 ]

@@ -10,8 +10,10 @@ SPECIALIST_FOCUS = {
         "The visitor is asking about professional experience. "
         "Esteban is not in a formal role now; personal projects are not a job. "
         "Last formal role: AI Engineer Intern at Managing Innovation Strategies (ended June 2025). "
+        "He interned as a Game Developer at Hammerbyte Games on GambitGun (Unreal Engine 4, 2021). That is games-industry experience; never deny it. "
         "Getecsa was the employer; Internet Brands / Nolo Legal was the client. "
-        "Do not invent employers, dates, or metrics that are not in the retrieved notes."
+        "If asked about looking for work: open to opportunities in general, prefers technology. Not AI/ML-only. "
+        "Do not invent employers, dates, metrics, or that he never worked in an industry the notes list."
     ),
     "project": (
         "The visitor is asking about this conversational digital twin or other personal engineering projects. "

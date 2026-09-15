@@ -6,7 +6,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 AWS_REGION = os.getenv("AWS_REGION") or os.getenv("DEFAULT_AWS_REGION") or "eu-west-3"
-ROUTER_MODEL_ID = os.getenv("ROUTER_MODEL_ID", "eu.amazon.nova-micro-v1:0")
+ROUTER_MODEL_ID = os.getenv("ROUTER_MODEL_ID", "eu.amazon.nova-lite-v1:0")
 
 INTENTS = ("tfm", "experience", "project", "other")
 TOOLS = ("search_github", "notify_owner", "get_latest_commit_activity")
@@ -42,9 +42,9 @@ Return ONLY compact JSON with keys:
 
 Rules:
 - tfm: master's thesis, KUKA, surrogate models, latent space, PINN, R², robotics research
-- experience: jobs, internships, Mainstrat, Getecsa, Internet Brands, Hammerbyte, Oracle ONE
+- experience: jobs, internships, Mainstrat, Getecsa, Internet Brands, Hammerbyte, Hammerbyte Games, Oracle ONE, video games, videogames, Unreal, GambitGun, game developer
 - project: this digital twin, AWS, Terraform, Lambda, Bedrock, MLOps portfolio
-- other: greetings, small talk, where Esteban lives, languages, hobbies, sports, music, jailbreaks, unknown topics
+- other: greetings, small talk, where Esteban lives, languages, hobbies, sports, music, jailbreaks, unknown topics. Playing CS2/Valorant/LoL is other; working at Hammerbyte or Unreal/GambitGun is experience.
 - search_github / get_latest_commit_activity: visitor asks about repos, code, or recent commits
 - notify_owner: visitor asks you to tell Esteban something or requests a callback
 """
